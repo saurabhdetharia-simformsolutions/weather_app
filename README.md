@@ -2,7 +2,9 @@
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/562b615376a54a11aff54e33625f7165)](https://app.codacy.com/gh/saurabhdetharia-simformsolutions/weather_app/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
+Video preview: [Preview.mp4](https://github.com/saurabhdetharia-simformsolutions/weather_app/blob/main/preview/weather_app_preview.mp4)
 
+Android apk: [Weather App](https://github.com/saurabhdetharia-simformsolutions/weather_app/blob/main/preview/weather_app_saurabh.apk)
 
 
 ## Requirements

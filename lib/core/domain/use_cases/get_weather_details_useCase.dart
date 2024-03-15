@@ -9,10 +9,8 @@ import 'base_usecase.dart';
 class GetWeatherDetailsUseCase
     implements BaseUseCase<CurrentWeatherRes, GetWeatherDetailsUseCaseParams> {
   final WeatherRepository weatherRepository;
-  final AppSettingRepository appSettingRepository;
 
-  GetWeatherDetailsUseCase(
-      {required this.weatherRepository, required this.appSettingRepository});
+  GetWeatherDetailsUseCase({required this.weatherRepository});
 
   @override
   Future<Either<ServerFailuresException, CurrentWeatherRes>> call(

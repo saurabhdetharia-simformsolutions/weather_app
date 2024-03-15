@@ -7,7 +7,4 @@ import '../../data/models/current_weather/current_weather_res.dart';
 abstract class WeatherRepository {
   Future<Either<ServerFailuresException, CurrentWeatherRes>> getWeatherDetails(
       CancelToken? cancelToken,Map<String,dynamic> queryParameter);
-
-  // Future<Either<ServerFailuresException, List<UserDetailModel>>> getUserDetails(
-  //     CancelToken? cancelToken,Map<String,dynamic> queryParameter);
 }

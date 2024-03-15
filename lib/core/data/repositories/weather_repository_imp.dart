@@ -15,7 +15,7 @@ class WeatherRepositoryImp extends WeatherRepository {
   Future<Either<ServerFailuresException, CurrentWeatherRes>> getWeatherDetails(
       CancelToken? cancelToken, Map<String, dynamic> queryParameter) async {
     final response = await apiService.get(
-        url: ApiEndPoints.getWeatherDetailsUrl,
+        url: ApiEndPoints.getCurrentWeatherDetailsUrl,
         cancelToken: cancelToken,
         queryParameter: queryParameter);
 

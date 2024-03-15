@@ -14,27 +14,30 @@ class ApiServiceDio {
 
   Future<Either<dynamic, dynamic>> get(
       {required String url,
-      CancelToken? cancelToken,
-      Map<String, dynamic>? queryParameter,
-      Map<String, dynamic>? headers,
-      bool isCheckVersionApi = false,
-      String shouldConsiderPrePostfixInUrl = ""}) async {
+        CancelToken? cancelToken,
+        Map<String, dynamic>? queryParameter,
+        Map<String, dynamic>? headers,
+        String isSearchLocationApi = ""}) async {
     try {
-      queryParameter?['appid'] = 'cb592366250070c4e42e6899d1c68551';
-      // queryParameter?['appid'] = 'b9929619ec24f8ea690a17aa31c34a90';
-      final uri =
-          Uri.https(appFlavorRepository.getBaseUrl(), url, queryParameter);
+      queryParameter?['appid'] = '801e74f1b2c15fd3887d4623a7195755';
+      String baseUrl = "";
+      if (isSearchLocationApi.isNotEmpty) {
+        baseUrl = isSearchLocationApi;
+      } else {
+        baseUrl = appFlavorRepository.getBaseUrl();
+      }
+      final uri = Uri.https(baseUrl, url, queryParameter);
       if (headers != null && headers.isNotEmpty) {
         dioService.options.headers.addAll(headers);
       }
       final response = await dioService
           .get(
-            uri.toString(),
-            cancelToken: cancelToken,
-            options: Options(
-              responseType: ResponseType.json,
-            ),
-          )
+        uri.toString(),
+        cancelToken: cancelToken,
+        options: Options(
+          responseType: ResponseType.json,
+        ),
+      )
           .timeout(Duration(seconds: timeOutSeconds));
 
       final resJson = _response(response);

@@ -16,3 +16,12 @@ var defaultPosition = Position(
   speed: 0,
   speedAccuracy: 0,
 );
+
+const keyIsFahrenheitSelected = 'IS_FAHRENHEIT_SELECTED';
+const keyIsCelsiusSelected = 'IS_CELSIUS_SELECTED';
+const keyWeatherInfo = 'WEATHER_INFO';
+
+/// To convert temp into cel or fer
+///
+/// This will be used globally
+bool isCelsius = true;

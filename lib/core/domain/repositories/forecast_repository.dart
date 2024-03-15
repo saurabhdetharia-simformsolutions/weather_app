@@ -1,0 +1,14 @@
+import 'package:dartz/dartz.dart';
+import 'package:dio/dio.dart';
+
+import '../../../error/server_failures_exception.dart';
+import '../../data/models/current_weather/current_weather_res.dart';
+import '../../data/models/daily_forecast/daily_forecast_res.dart';
+
+abstract class ForecastRepository {
+  Future<Either<ServerFailuresException, DailyForecast>> getDailyForecast(
+      CancelToken? cancelToken,Map<String,dynamic> queryParameter);
+
+  // Future<Either<ServerFailuresException, List<UserDetailModel>>> getUserDetails(
+  //     CancelToken? cancelToken,Map<String,dynamic> queryParameter);
+}

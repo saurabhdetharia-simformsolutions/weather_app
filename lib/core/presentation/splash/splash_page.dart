@@ -39,7 +39,7 @@ class _SplashPageState extends State<SplashPage> {
         seconds: 2,
       ),
       () {
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) {
             return BlocProvider(

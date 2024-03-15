@@ -5,4 +5,9 @@ class AppFlavorRepositoryImp implements AppFlavorRepository {
   String getBaseUrl() {
     return 'api.openweathermap.org';
   }
+
+  @override
+  String getSearchLocationBaseUrl() {
+   return 'geocoding-api.open-meteo.com';
+  }
 }

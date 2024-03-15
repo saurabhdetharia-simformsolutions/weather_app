@@ -4,54 +4,49 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'current_weather_res.g.dart';
 
-CurrentWeatherRes weatherModelFromJson(String str) =>
-    CurrentWeatherRes.fromJson(json.decode(str));
-
-String weatherModelToJson(CurrentWeatherRes data) => json.encode(data.toJson());
-
 @JsonSerializable()
 class CurrentWeatherRes {
   @JsonKey(name: "coord")
-  final Coord coord;
+  final Coord? coord;
   @JsonKey(name: "weather")
-  final List<Weather> weather;
+  final List<Weather>? weather;
   @JsonKey(name: "base")
-  final String base;
+  final String? base;
   @JsonKey(name: "main")
-  final Main main;
+  final Main? main;
   @JsonKey(name: "visibility")
-  final int visibility;
+  final int? visibility;
   @JsonKey(name: "wind")
-  final Wind wind;
+  final Wind? wind;
   @JsonKey(name: "clouds")
-  final Clouds clouds;
+  final Clouds? clouds;
   @JsonKey(name: "dt")
-  final int dt;
+  final int? dt;
   @JsonKey(name: "sys")
-  final Sys sys;
+  final Sys? sys;
   @JsonKey(name: "timezone")
-  final int timezone;
+  final int? timezone;
   @JsonKey(name: "id")
-  final int id;
+  final int? id;
   @JsonKey(name: "name")
-  final String name;
+  final String? name;
   @JsonKey(name: "cod")
-  final int cod;
+  final int? cod;
 
   CurrentWeatherRes({
-    required this.coord,
-    required this.weather,
-    required this.base,
-    required this.main,
-    required this.visibility,
-    required this.wind,
-    required this.clouds,
-    required this.dt,
-    required this.sys,
-    required this.timezone,
-    required this.id,
-    required this.name,
-    required this.cod,
+    this.coord,
+    this.weather,
+    this.base,
+    this.main,
+    this.visibility,
+    this.wind,
+    this.clouds,
+    this.dt,
+    this.sys,
+    this.timezone,
+    this.id,
+    this.name,
+    this.cod,
   });
 
   CurrentWeatherRes copyWith({
@@ -85,8 +80,7 @@ class CurrentWeatherRes {
         cod: cod ?? this.cod,
       );
 
-  factory CurrentWeatherRes.fromJson(Map<String, dynamic> json) =>
-      _$CurrentWeatherResFromJson(json);
+  factory CurrentWeatherRes.fromJson(Map<String, dynamic> json) => _$CurrentWeatherResFromJson(json);
 
   Map<String, dynamic> toJson() => _$CurrentWeatherResToJson(this);
 }
@@ -94,10 +88,10 @@ class CurrentWeatherRes {
 @JsonSerializable()
 class Clouds {
   @JsonKey(name: "all")
-  final int all;
+  final int? all;
 
   Clouds({
-    required this.all,
+    this.all,
   });
 
   Clouds copyWith({
@@ -115,13 +109,13 @@ class Clouds {
 @JsonSerializable()
 class Coord {
   @JsonKey(name: "lon")
-  final double lon;
+  final double? lon;
   @JsonKey(name: "lat")
-  final double lat;
+  final double? lat;
 
   Coord({
-    required this.lon,
-    required this.lat,
+    this.lon,
+    this.lat,
   });
 
   Coord copyWith({
@@ -141,31 +135,25 @@ class Coord {
 @JsonSerializable()
 class Main {
   @JsonKey(name: "temp")
-  final double temp;
+  final double? temp;
   @JsonKey(name: "feels_like")
-  final double feelsLike;
+  final double? feelsLike;
   @JsonKey(name: "temp_min")
-  final double tempMin;
+  final double? tempMin;
   @JsonKey(name: "temp_max")
-  final double tempMax;
+  final double? tempMax;
   @JsonKey(name: "pressure")
-  final int pressure;
+  final int? pressure;
   @JsonKey(name: "humidity")
-  final int humidity;
-  @JsonKey(name: "sea_level")
-  final int seaLevel;
-  @JsonKey(name: "grnd_level")
-  final int grndLevel;
+  final int? humidity;
 
   Main({
-    required this.temp,
-    required this.feelsLike,
-    required this.tempMin,
-    required this.tempMax,
-    required this.pressure,
-    required this.humidity,
-    required this.seaLevel,
-    required this.grndLevel,
+    this.temp,
+    this.feelsLike,
+    this.tempMin,
+    this.tempMax,
+    this.pressure,
+    this.humidity,
   });
 
   Main copyWith({
@@ -175,8 +163,6 @@ class Main {
     double? tempMax,
     int? pressure,
     int? humidity,
-    int? seaLevel,
-    int? grndLevel,
   }) =>
       Main(
         temp: temp ?? this.temp,
@@ -185,8 +171,6 @@ class Main {
         tempMax: tempMax ?? this.tempMax,
         pressure: pressure ?? this.pressure,
         humidity: humidity ?? this.humidity,
-        seaLevel: seaLevel ?? this.seaLevel,
-        grndLevel: grndLevel ?? this.grndLevel,
       );
 
   factory Main.fromJson(Map<String, dynamic> json) => _$MainFromJson(json);
@@ -197,22 +181,22 @@ class Main {
 @JsonSerializable()
 class Sys {
   @JsonKey(name: "type")
-  final int type;
+  final int? type;
   @JsonKey(name: "id")
-  final int id;
+  final int? id;
   @JsonKey(name: "country")
-  final String country;
+  final String? country;
   @JsonKey(name: "sunrise")
-  final int sunrise;
+  final int? sunrise;
   @JsonKey(name: "sunset")
-  final int sunset;
+  final int? sunset;
 
   Sys({
-    required this.type,
-    required this.id,
-    required this.country,
-    required this.sunrise,
-    required this.sunset,
+    this.type,
+    this.id,
+    this.country,
+    this.sunrise,
+    this.sunset,
   });
 
   Sys copyWith({
@@ -238,19 +222,19 @@ class Sys {
 @JsonSerializable()
 class Weather {
   @JsonKey(name: "id")
-  final int id;
+  final int? id;
   @JsonKey(name: "main")
-  final String main;
+  final String? main;
   @JsonKey(name: "description")
-  final String description;
+  final String? description;
   @JsonKey(name: "icon")
-  final String icon;
+  final String? icon;
 
   Weather({
-    required this.id,
-    required this.main,
-    required this.description,
-    required this.icon,
+    this.id,
+    this.main,
+    this.description,
+    this.icon,
   });
 
   Weather copyWith({
@@ -266,8 +250,7 @@ class Weather {
         icon: icon ?? this.icon,
       );
 
-  factory Weather.fromJson(Map<String, dynamic> json) =>
-      _$WeatherFromJson(json);
+  factory Weather.fromJson(Map<String, dynamic> json) => _$WeatherFromJson(json);
 
   Map<String, dynamic> toJson() => _$WeatherToJson(this);
 }
@@ -275,27 +258,22 @@ class Weather {
 @JsonSerializable()
 class Wind {
   @JsonKey(name: "speed")
-  final double speed;
+  final double? speed;
   @JsonKey(name: "deg")
-  final int deg;
-  @JsonKey(name: "gust")
-  final double gust;
+  final int? deg;
 
   Wind({
-    required this.speed,
-    required this.deg,
-    required this.gust,
+    this.speed,
+    this.deg,
   });
 
   Wind copyWith({
     double? speed,
     int? deg,
-    double? gust,
   }) =>
       Wind(
         speed: speed ?? this.speed,
         deg: deg ?? this.deg,
-        gust: gust ?? this.gust,
       );
 
   factory Wind.fromJson(Map<String, dynamic> json) => _$WindFromJson(json);

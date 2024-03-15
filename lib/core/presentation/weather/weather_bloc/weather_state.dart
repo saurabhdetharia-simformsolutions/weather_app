@@ -8,21 +8,30 @@ abstract class WeatherState extends Equatable {
 class WeatherInitial extends WeatherState {}
 
 class WeatherSuccess extends WeatherState {
-
-  CurrentWeatherRes weatherDetailsResponse;
+  final CurrentWeatherRes weatherDetailsResponse;
 
   WeatherSuccess({
     required this.weatherDetailsResponse,
   });
+
+  @override
+  // TODO: implement props
+  List<Object?> get props => [weatherDetailsResponse];
+
+  @override
+  bool operator ==(Object other) {
+    return false;
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
 }
 
 class CurrentWeatherErrorState extends WeatherState {
-
   final String message;
 
   CurrentWeatherErrorState({required this.message});
 }
-
 
 class SearchLocationState extends WeatherState {
   final SearchLocationRes searchLocationRes;

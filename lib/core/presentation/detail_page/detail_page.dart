@@ -1,19 +1,26 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:weather_app/core/presentation/detail_page/detail_bloc/detail_bloc.dart';
-import 'package:weather_app/image_const.dart';
-import 'package:weather_app/temperature_conversion_helper.dart';
 import 'package:intl/intl.dart';
+import 'package:weather_app/core/presentation/detail_page/detail_bloc/detail_bloc.dart';
+import 'package:weather_app/helper.dart';
+import 'package:weather_app/image_const.dart';
+
+import '../../../const.dart';
 
 class DetailPage extends StatefulWidget {
   const DetailPage({
     Key? key,
     required this.location,
+    required this.temp,
+    required this.name,
   }) : super(key: key);
 
-  final Position location;
+  final Position? location;
+  final String? temp;
+  final String? name;
 
   @override
   State<DetailPage> createState() => _DetailPageState();
@@ -23,10 +30,14 @@ class _DetailPageState extends State<DetailPage> {
   @override
   Future<void> didChangeDependencies() async {
     super.didChangeDependencies();
+    var connectivityResult = await (Connectivity().checkConnectivity());
+
     if (mounted) {
       // Fetch the weather details for the current location
       context.read<DetailBloc>().add(GetDetailForecastEvent(
-            location: widget.location,
+            location: connectivityResult != ConnectivityResult.none
+                ? widget.location
+                : null,
           ));
     }
   }
@@ -62,8 +73,9 @@ class _DetailPageState extends State<DetailPage> {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              (dailyForecastResponse.city?.name ?? '')
-                                  .toString(),
+                              widget.name ??
+                                  (dailyForecastResponse.city?.name ?? '')
+                                      .toString(),
                               style: const TextStyle(
                                 color: Colors.black,
                                 fontSize: 24,
@@ -71,7 +83,7 @@ class _DetailPageState extends State<DetailPage> {
                               ),
                             ),
                             Text(
-                              '${toCelsius(dailyForecastResponse.list?.first.temp?.day ?? 0).toStringAsPrecision(2)}°',
+                              widget.temp ?? '',
                               style: const TextStyle(
                                   color: Colors.black,
                                   fontSize: 20,
@@ -97,7 +109,8 @@ class _DetailPageState extends State<DetailPage> {
                               dailyForecastResponse.list![index];
 
                           final DateFormat formatter = DateFormat('EEEE');
-                          final String day = formatter.format(DateTime.now().add(Duration(days: index+1)));
+                          final String day = formatter.format(
+                              DateTime.now().add(Duration(days: index + 1)));
 
                           return Container(
                             width: double.infinity,
@@ -109,6 +122,8 @@ class _DetailPageState extends State<DetailPage> {
                             ),
                             height: 50,
                             child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 const SizedBox(width: 10),
                                 SizedBox.square(
@@ -128,20 +143,29 @@ class _DetailPageState extends State<DetailPage> {
                                     ),
                                   ),
                                 ),
-                                const Spacer(),
+                                const SizedBox(width: 10),
+                                SizedBox(
+                                  width: 120,
+                                  child: Text(
+                                    day,
+                                    style: style,
+                                  ),
+                                ),
                                 Text(
-                                  day,
+                                  isCelsius
+                                      ? '${toCelsius(dailyForecast.temp?.min ?? 0).toStringAsFixed(0)}°/${toCelsius(dailyForecast.temp?.max ?? 0).toStringAsFixed(0)}°'
+                                      : '${toFahrenheit(dailyForecast.temp?.min ?? 0).toStringAsFixed(0)}°/${toFahrenheit(dailyForecast.temp?.max ?? 0).toStringAsFixed(0)}°',
                                   style: style,
                                 ),
-                                const Spacer(),
-                                Text(
-                                  '${toCelsius(dailyForecast.temp?.day ?? 0).toStringAsPrecision(2)}°',
-                                  style: style,
+                                SizedBox(
+                                  width: 10,
                                 ),
-                                const Spacer(),
-                                Text(
-                                  dailyForecast.weather?.first.main ?? '',
-                                  style: style,
+                                SizedBox(
+                                  width: 70,
+                                  child: Text(
+                                    dailyForecast.weather?.first.main ?? '',
+                                    style: style,
+                                  ),
                                 ),
                                 const SizedBox(width: 10),
                               ],
@@ -154,7 +178,71 @@ class _DetailPageState extends State<DetailPage> {
                   ],
                 );
               } else {
-                return const SizedBox.shrink();
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          width: 30,
+                          height: 30,
+                          decoration: BoxDecoration(
+                            color: shimmerColor,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Container(
+                              width: 80,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                color: shimmerColor,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            Container(
+                              width: 35,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                color: shimmerColor,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    Expanded(
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        separatorBuilder: (context, index) {
+                          return const SizedBox(
+                            height: 10,
+                          );
+                        },
+                        itemBuilder: (context, index) {
+                          return Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: shimmerColor,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            height: 50,
+                          );
+                        },
+                        itemCount: 7,
+                      ),
+                    ),
+                  ],
+                );
               }
             },
           ),

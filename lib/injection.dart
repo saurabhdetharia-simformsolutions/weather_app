@@ -5,6 +5,8 @@ import 'package:weather_app/core/domain/repositories/forecast_repository.dart';
 import 'package:weather_app/core/domain/repositories/weather_repository.dart';
 import 'package:weather_app/core/domain/use_cases/get_daily_forecast_useCase.dart';
 import 'package:weather_app/core/presentation/detail_page/detail_bloc/detail_bloc.dart';
+import 'package:weather_app/core/presentation/settings/bloc/frequency/frequency_bloc.dart';
+import 'package:weather_app/core/presentation/settings/bloc/temperature/temperature_bloc.dart';
 import 'package:weather_app/core/presentation/settings/settings_bloc/settings_bloc.dart';
 
 import 'core/data/api_service.dart';
@@ -83,6 +85,7 @@ Future<void> init() async {
   sl.registerFactory(
     () => DetailBloc(
       dailyForecastUseCase: sl(),
+      appSettingRepository: sl(),
     ),
   );
 
@@ -92,6 +95,12 @@ Future<void> init() async {
 
   sl.registerFactory(
     () => TemperatureBloc(
+      appSettingRepository: sl(),
+    ),
+  );
+
+  sl.registerFactory(
+    () => FrequencyBloc(
       appSettingRepository: sl(),
     ),
   );

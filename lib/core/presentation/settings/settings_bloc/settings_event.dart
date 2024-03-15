@@ -8,18 +8,5 @@ class GetSettingsEvent extends SettingsEvent {
   GetSettingsEvent({required this.location});
 }
 
-abstract class TemperatureSettingsEvent {}
 
-class GetTemperatureSettingsEvent extends TemperatureSettingsEvent {}
 
-class UpdateCelsiusEvent extends TemperatureSettingsEvent {
-  final bool isCelsiusSelected;
-
-  UpdateCelsiusEvent({required this.isCelsiusSelected});
-}
-
-class UpdateFahrenheitEvent extends TemperatureSettingsEvent {
-  final bool isFahrenheitSelected;
-
-  UpdateFahrenheitEvent({required this.isFahrenheitSelected});
-}

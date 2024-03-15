@@ -33,7 +33,7 @@ class AppSettingRepositoryImp implements AppSettingRepository {
 
   @override
   bool shouldShowCelsius() {
-    return secureStorage.getBoolean(keyIsCelsiusSelected);
+    return secureStorage.getBoolean(keyIsCelsiusSelected, true);
   }
 
   @override
@@ -53,23 +53,71 @@ class AppSettingRepositoryImp implements AppSettingRepository {
 
   @override
   double getLat() {
-    // TODO: implement getLat
-    throw UnimplementedError();
+    return double.tryParse(secureStorage.getString(keyLat)) ?? 0;
   }
 
   @override
   double getLong() {
-    // TODO: implement getLong
-    throw UnimplementedError();
+    return double.tryParse(secureStorage.getString(keyLong)) ?? 0;
   }
 
   @override
-  void setLat(double lat) {
-    // TODO: implement setLat
+  void setLat(String lat) {
+    secureStorage.setString(keyLat, lat.toString());
   }
 
   @override
-  void setLong(double long) {
-    // TODO: implement setLong
+  void setLong(String long) {
+    secureStorage.setString(keyLong, long.toString());
+  }
+
+  @override
+  bool isSixtyMinsEnabled() {
+    return secureStorage.getBoolean(key60MinFreq);
+  }
+
+  @override
+  bool isTenMinsEnabled() {
+    return secureStorage.getBoolean(key10MinFreq, true);
+  }
+
+  @override
+  bool isThirtyMinsEnabled() {
+    return secureStorage.getBoolean(key30MinFreq);
+  }
+
+  @override
+  void shouldEnableSixtyyMins(bool isSelected) {
+    secureStorage.setBoolean(key60MinFreq, isSelected);
+  }
+
+  @override
+  void shouldEnableTenMins(bool isSelected) {
+    secureStorage.setBoolean(key10MinFreq, isSelected);
+  }
+
+  @override
+  void shouldEnableThirtyMins(bool isSelected) {
+    secureStorage.setBoolean(key30MinFreq, isSelected);
+  }
+
+  @override
+  String getLastOpenTime() {
+    return secureStorage.getString(keyLastOpenTime);
+  }
+
+  @override
+  void saveLastOpenTime(String dateTime) {
+    secureStorage.setString(keyLastOpenTime, dateTime);
+  }
+
+  @override
+  String getDailyForecastInfo() {
+    return secureStorage.getString(keyDailyForecast);
+  }
+
+  @override
+  void saveDailyForecastInfo(String dailyForecastInfo) {
+    secureStorage.setString(keyDailyForecast, dailyForecastInfo);
   }
 }

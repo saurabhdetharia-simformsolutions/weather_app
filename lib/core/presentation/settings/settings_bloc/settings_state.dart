@@ -14,32 +14,43 @@ class SettingsFetched extends SettingsState {
   });
 }
 
-abstract class TemperatureSettingsState {}
 
-class TemperatureSettingsInitial extends TemperatureSettingsState {}
+abstract class FrequencySettingsState {}
 
-class TemperatureSettingsFetched extends TemperatureSettingsState {
-  final bool shouldShowCelsius;
-  final bool shouldShowFahrenheit;
+class FrequencySettingsInitial extends FrequencySettingsState {}
 
-  TemperatureSettingsFetched({
-    required this.shouldShowCelsius,
-    required this.shouldShowFahrenheit,
+class FrequencySettingsFetched extends FrequencySettingsState {
+  final bool isTenMinsFreqEnabled;
+  final bool isThirtyMinsFreqEnabled;
+  final bool isSixtyMinsFreqEnabled;
+
+  FrequencySettingsFetched({
+    required this.isTenMinsFreqEnabled,
+    required this.isThirtyMinsFreqEnabled,
+    required this.isSixtyMinsFreqEnabled,
   });
 }
 
-class FahrenheitUpdated extends TemperatureSettingsState {
+class FrequencyTenMinsUpdated extends FrequencySettingsState {
   final bool isSelected;
 
-  FahrenheitUpdated({
+  FrequencyTenMinsUpdated({
     required this.isSelected,
   });
 }
 
-class CelsiusUpdated extends TemperatureSettingsState {
+class FrequencyThirtyMinsUpdated extends FrequencySettingsState {
   final bool isSelected;
 
-  CelsiusUpdated({
+  FrequencyThirtyMinsUpdated({
+    required this.isSelected,
+  });
+}
+
+class FrequencySixtyMinsUpdated extends FrequencySettingsState {
+  final bool isSelected;
+
+  FrequencySixtyMinsUpdated({
     required this.isSelected,
   });
 }

@@ -1,11 +1,11 @@
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
-import 'package:weather_app/core/data/models/current_weather/current_weather_res.dart';
-import '../../domain/repositories/forecast_repository.dart';
-import '../models/daily_forecast/daily_forecast_res.dart';
+
 import '/error/server_failures_exception.dart';
+import '../../domain/repositories/forecast_repository.dart';
 import '../api_routes.dart' as ApiEndPoints;
 import '../api_service.dart';
+import '../models/daily_forecast/daily_forecast_res.dart';
 
 class ForecastRepositoryImp extends ForecastRepository {
   final ApiServiceDio apiService;

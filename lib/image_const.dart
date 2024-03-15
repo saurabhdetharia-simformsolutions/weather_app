@@ -7,10 +7,11 @@ const cloudyIcon = 'assets/images/ic_cloudy.svg';
 const nightIcon = 'assets/images/ic_night.svg';
 const rainyIcon = 'assets/images/ic_rainy.svg';
 const thunderstomIcon = 'assets/images/ic_thunderstom.svg';
+const offlineIcon = 'assets/images/ic_offline.png';
 
 
 String getIconUrl(String iconId) =>
-    'https://raw.githubusercontent.com/1hanzla100/flutter-weather/07c38fc9fd21b2f380a6c56a30f0927183626a91/assets/svgs/${iconId}.svg';
+    'https://raw.githubusercontent.com/1hanzla100/flutter-weather/07c38fc9fd21b2f380a6c56a30f0927183626a91/assets/svgs/$iconId.svg';
 
 String getSmallIconUrl(String iconId) =>
-    'https://openweathermap.org/img/wn/${'04d'.substring(0, iconId.length - 1)}d@2x.png';
+    'https://openweathermap.org/img/wn/$iconId@2x.png';

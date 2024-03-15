@@ -19,7 +19,7 @@ class ApiServiceDio {
         Map<String, dynamic>? headers,
         String isSearchLocationApi = ""}) async {
     try {
-      queryParameter?['appid'] = '801e74f1b2c15fd3887d4623a7195755';
+      queryParameter?['appid'] = '';
       String baseUrl = "";
       if (isSearchLocationApi.isNotEmpty) {
         baseUrl = isSearchLocationApi;

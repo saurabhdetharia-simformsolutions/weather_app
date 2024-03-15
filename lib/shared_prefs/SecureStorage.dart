@@ -18,8 +18,8 @@ class SecureStorage {
     await sharedPreferences.setBool(key, value);
   }
 
-  bool getBoolean(String key) {
+  bool getBoolean(String key, [bool? defaultValue]) {
     final bool? value = sharedPreferences.getBool(key);
-    return value ?? false;
+    return value ?? defaultValue ?? false;
   }
 }

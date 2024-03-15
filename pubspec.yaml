@@ -61,9 +61,17 @@ dependencies:
   # For json annotation
   json_annotation: ^4.8.1
 
+  # To test BLoC
   bloc_test: ^9.1.4
 
+  # Compare objects in Dart
   equatable: ^2.0.5
+
+  # To extends the capabilities of Dart Streams
+  rxdart: ^0.27.7
+
+  # To check the internet connectivity
+  connectivity_plus: ^5.0.2
 
 dev_dependencies:
   flutter_test:
@@ -101,15 +109,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/images/app_icon.svg
-    - assets/images/ic_cloud.svg
-    - assets/images/ic_humidity.svg
-    - assets/images/ic_temp.svg
-    - assets/images/ic_wind.svg
-    - assets/images/ic_cloudy.svg
-    - assets/images/ic_night.svg
-    - assets/images/ic_rainy.svg
-    - assets/images/ic_thunderstoms.svg
+    - assets/images/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

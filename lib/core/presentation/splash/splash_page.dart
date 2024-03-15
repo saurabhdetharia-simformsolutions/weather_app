@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:weather_app/core/presentation/settings/bloc/temperature/temperature_bloc.dart';
 
 import '../../../image_const.dart';
 import '../../../injection.dart';
@@ -42,10 +43,7 @@ class _SplashPageState extends State<SplashPage> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) {
-            return BlocProvider(
-              create: (context) => sl<WeatherBloc>(),
-              child: const WeatherPage(),
-            );
+            return const WeatherPage();
           }),
         );
       },

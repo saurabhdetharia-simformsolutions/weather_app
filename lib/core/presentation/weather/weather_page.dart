@@ -1,19 +1,23 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
+import 'package:weather_app/core/data/models/current_weather/current_weather_res.dart';
 import 'package:weather_app/core/presentation/detail_page/detail_bloc/detail_bloc.dart';
 import 'package:weather_app/core/presentation/settings/settings_page.dart';
 import 'package:weather_app/image_const.dart';
 
 import '../../../const.dart';
 import '../../../core/presentation/weather/weather_bloc/weather_bloc.dart';
+import '../../../helper.dart';
 import '../../../injection.dart';
-import '../../../temperature_conversion_helper.dart';
+import '../../app_strings.dart';
+import '../../data/models/search_location/search_location_res.dart';
 import '../detail_page/detail_page.dart';
-import '../search_bar/search_bar.dart';
+import '../search_bar/search_bar_page.dart';
 
 class WeatherPage extends StatefulWidget {
   const WeatherPage({Key? key}) : super(key: key);
@@ -23,20 +27,43 @@ class WeatherPage extends StatefulWidget {
 }
 
 class _WeatherPageState extends State<WeatherPage> {
-  late Position location;
+  Position? location;
+  String? name;
+  late ConnectivityResult connectivityResult;
 
   @override
   Future<void> didChangeDependencies() async {
     super.didChangeDependencies();
 
-    // Get the lat-long for the current location.
-    location = await _getCurrentLocation();
-    if (mounted) {
-      // Fetch the weather details for the current location
-      context.read<WeatherBloc>().add(GetWeatherDetailsEvent(
-            latitude: location.latitude.toString(),
-            longitude: location.longitude.toString(),
-          ));
+    connectivityResult = await (Connectivity().checkConnectivity());
+
+    if (connectivityResult != ConnectivityResult.none) {
+      // Get the lat-long for the current location.
+
+      if (mounted) {
+        // Fetch the weather details for the current location
+        context.read<WeatherBloc>().add(GetWeatherDetailsEvent(
+              name: null,
+              latitude: null,
+              longitude:null,
+            ));
+      }
+      location = await _getCurrentLocation();
+      if(mounted){
+        context.read<WeatherBloc>().add(GetWeatherDetailsEvent(
+          name: null,
+          latitude: location!.latitude.toString(),
+          longitude: location!.longitude.toString(),
+        ));
+      }
+    } else {
+      if (mounted) {
+        context.read<WeatherBloc>().add(GetWeatherDetailsEvent(
+              name: null,
+              latitude: null,
+              longitude: null,
+            ));
+      }
     }
   }
 
@@ -48,61 +75,60 @@ class _WeatherPageState extends State<WeatherPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20.0,
-                    vertical: 20,
-                  ),
-                  child: _header,
-                ),
-                BlocBuilder<WeatherBloc, WeatherState>(
-                  builder: (context, state) {
-                    if (state is WeatherSuccess) {
-                      return IconButton(
-                        onPressed: () {
-                          Navigator.push(context,
-                              MaterialPageRoute(builder: (context) {
-                            return const SettingsPage();
-                          }));
-                        },
-                        icon: const Icon(
-                          CupertinoIcons.gear_alt_fill,
-                        ),
-                      );
-                    } else {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20.0,
-                        ),
-                        child: IconButton(
-                          onPressed: null,
-                          icon: Icon(
-                            CupertinoIcons.gear_alt_fill,
-                            color: Colors.grey.shade200,
-                          ),
-                        ),
-                      );
-                    }
-                  },
-                ),
-              ],
-            ),
-            const Spacer(),
-            _weatherIcon,
-            const Spacer(),
             Padding(
               padding: const EdgeInsets.symmetric(
-                horizontal: 20.0,
+                horizontal: 20,
+                vertical: 20,
               ),
-              child: _weatherInfo,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _header,
+                  BlocBuilder<WeatherBloc, WeatherState>(
+                    builder: (context, state) {
+                      if (state is WeatherSuccess) {
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return const SettingsPage();
+                                },
+                              ),
+                            ).then((value) {
+                              context.read<WeatherBloc>().add(
+                                  WeatherTempConvertEvent(
+                                      weatherDetailsResponse:
+                                          weatherDetailsResponse!));
+                            });
+                          },
+                          child: const Icon(
+                            CupertinoIcons.gear,
+                            size: 30,
+                          ),
+                        );
+                      } else {
+                        return Icon(
+                          CupertinoIcons.gear,
+                          size: 30,
+                          color: shimmerColor,
+                        );
+                      }
+                    },
+                  ),
+                ],
+              ),
             ),
             const SizedBox(
-              height: 40,
+              height: 70,
             ),
+            _weatherIcon,
+            const SizedBox(
+              height: 5,
+            ),
+            _weatherInfo,
+            const Spacer(),
             Container(
               height: 120,
               width: double.infinity,
@@ -123,8 +149,75 @@ class _WeatherPageState extends State<WeatherPage> {
                   top: Radius.circular(24),
                 ),
               ),
-              child: SearchBarWithSuggestions(
-                itemClick: (item) {},
+              child: GestureDetector(
+                onTap: () async {
+                  connectivityResult =
+                      await (Connectivity().checkConnectivity());
+
+                  if (connectivityResult != ConnectivityResult.none &&
+                      mounted) {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
+                      return SearchBarPage(
+                        onUpdatedLocation: (Result result) {
+                          location = Position(
+                              longitude: result.longitude,
+                              latitude: result.latitude,
+                              timestamp: DateTime.now(),
+                              accuracy: 0,
+                              altitude: 0,
+                              altitudeAccuracy: 0,
+                              heading: 0,
+                              headingAccuracy: 0,
+                              speed: 0,
+                              speedAccuracy: 0);
+                          name = result.name;
+                          context.read<WeatherBloc>().add(
+                              GetWeatherDetailsEvent(
+                                  name: result.name,
+                                  latitude: result.latitude.toString(),
+                                  longitude: result.longitude.toString()));
+                        },
+                      );
+                    }));
+                  } else {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text(youAreOffline),
+                      ));
+                    }
+                  }
+                },
+                child: Container(
+                  width: double.infinity,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(24),
+                    color: Colors.lightBlue.shade50,
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                  ),
+                  alignment: Alignment.centerLeft,
+                  child: const Row(
+                    children: [
+                      Icon(
+                        CupertinoIcons.search,
+                        color: Colors.grey,
+                      ),
+                      SizedBox(
+                        width: 10,
+                      ),
+                      Text(
+                        searchYourLocation,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ],
@@ -160,7 +253,7 @@ class _WeatherPageState extends State<WeatherPage> {
                   width: 150,
                   height: 20,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
+                    color: shimmerColor,
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
@@ -171,7 +264,7 @@ class _WeatherPageState extends State<WeatherPage> {
                   width: 50,
                   height: 20,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
+                    color: shimmerColor,
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
@@ -200,9 +293,8 @@ class _WeatherPageState extends State<WeatherPage> {
         builder: (context, state) {
           if (state is WeatherSuccess) {
             return Center(
-              child: SvgPicture.network(
-                getIconUrl(
-                    state.weatherDetailsResponse.weather?.first.icon ?? ''),
+              child: SvgPicture.asset(
+                'assets/images/${(state.weatherDetailsResponse.weather?.first.icon ?? '')}.svg',
                 height: 180,
                 width: 180,
               ),
@@ -214,7 +306,7 @@ class _WeatherPageState extends State<WeatherPage> {
                 height: 180,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.grey.shade200,
+                  color: shimmerColor,
                 ),
               ),
             );
@@ -223,23 +315,20 @@ class _WeatherPageState extends State<WeatherPage> {
       );
 
   /// Detail view button
-  ///
   Widget get _detailViewButton => GestureDetector(
         onTap: () => _navigateToNextPage(location),
         child: Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: Colors.black,
-              width: 2,
-            ),
-          ),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: Colors.black,
+              )),
           padding: const EdgeInsets.symmetric(
             horizontal: 24,
-            vertical: 5,
+            vertical: 10,
           ),
           child: const Text(
-            'See next 7 days >',
+            seeNextSevenDays,
             style: TextStyle(
               fontWeight: FontWeight.bold,
             ),
@@ -247,280 +336,266 @@ class _WeatherPageState extends State<WeatherPage> {
         ),
       );
 
+  CurrentWeatherRes? weatherDetailsResponse;
+
   /// Weather information
   Widget get _weatherInfo => BlocBuilder<WeatherBloc, WeatherState>(
         builder: (context, state) {
           if (state is WeatherSuccess) {
-            var weatherDetailsResponse = state.weatherDetailsResponse;
-
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            weatherDetailsResponse = state.weatherDetailsResponse;
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Text(
+                      isCelsius
+                          ? '${toCelsius(weatherDetailsResponse!.main?.temp ?? 0).toStringAsPrecision(2)}°'
+                          : '${toFahrenheit(weatherDetailsResponse!.main?.temp ?? 0).toStringAsPrecision(2)}°',
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 60,
+                        fontWeight: FontWeight.w700,
+                        height: 0.9,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  Text(
+                    weatherDetailsResponse!.weather?.first.main ?? '',
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        '${toCelsius(weatherDetailsResponse.main?.temp ?? 0).toStringAsPrecision(2)}°',
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 60,
-                          fontWeight: FontWeight.w700,
-                          height: 0.9,
-                        ),
+                      SvgPicture.asset(
+                        windIcon,
+                        height: 20,
+                        width: 20,
+                      ),
+                      const SizedBox(
+                        width: 5,
                       ),
                       Text(
-                        weatherDetailsResponse.weather?.first.main ?? '',
+                        '${weatherDetailsResponse!.wind?.speed ?? 0}',
                         style: const TextStyle(
                           color: Colors.black,
-                          fontSize: 22,
+                          fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       const SizedBox(
-                        height: 10,
+                        width: 20,
                       ),
-                      _detailViewButton,
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Row(
-                        children: [
-                          SvgPicture.asset(
-                            windIcon,
-                            height: 20,
-                            width: 20,
-                          ),
-                          const SizedBox(
-                            width: 5,
-                          ),
-                          Text(
-                            '${weatherDetailsResponse.wind?.speed ?? 0}',
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
+                      SvgPicture.asset(
+                        tempIcon,
+                        height: 20,
+                        width: 20,
                       ),
                       const SizedBox(
-                        height: 5,
+                        width: 5,
                       ),
-                      Row(
-                        children: [
-                          SvgPicture.asset(
-                            tempIcon,
-                            height: 20,
-                            width: 20,
-                          ),
-                          const SizedBox(
-                            width: 5,
-                          ),
-                          Text(
-                            '${toCelsius(weatherDetailsResponse.main?.feelsLike ?? 0).toStringAsPrecision(2)}°',
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
+                      Text(
+                        isCelsius
+                            ? '${toCelsius(weatherDetailsResponse!.main?.feelsLike ?? 0).toStringAsPrecision(2)}°'
+                            : '${toFahrenheit(weatherDetailsResponse!.main?.feelsLike ?? 0).toStringAsPrecision(2)}°',
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                       const SizedBox(
-                        height: 5,
+                        width: 20,
                       ),
-                      Row(
-                        children: [
-                          SvgPicture.asset(
-                            cloudIcon,
-                            height: 15,
-                            width: 15,
-                          ),
-                          const SizedBox(
-                            width: 5,
-                          ),
-                          Text(
-                            '${weatherDetailsResponse.clouds?.all ?? 0}%',
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
+                      SvgPicture.asset(
+                        cloudIcon,
+                        height: 15,
+                        width: 15,
                       ),
                       const SizedBox(
-                        height: 5,
+                        width: 5,
                       ),
-                      Row(
-                        children: [
-                          SvgPicture.asset(
-                            humidityIcon,
-                            height: 20,
-                            width: 20,
-                          ),
-                          const SizedBox(
-                            width: 5,
-                          ),
-                          Text(
-                            '${weatherDetailsResponse.main?.humidity ?? 0}%',
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
+                      Text(
+                        '${weatherDetailsResponse!.clouds?.all ?? 0}%',
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 20,
+                      ),
+                      SvgPicture.asset(
+                        humidityIcon,
+                        height: 20,
+                        width: 20,
+                      ),
+                      const SizedBox(
+                        width: 5,
+                      ),
+                      Text(
+                        '${weatherDetailsResponse!.main?.humidity ?? 0}%',
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
-                ),
-              ],
+                  const SizedBox(
+                    height: 30,
+                  ),
+                  _detailViewButton,
+                ],
+              ),
             );
           } else {
-            return Row(
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Expanded(
-                  flex: 3,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 150,
-                        height: 25,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade200,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      Container(
-                        width: 70,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade200,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      Container(
-                        width: 130,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(24),
-                          color: Colors.grey.shade200,
-                        ),
-                      ),
-                    ],
+                const SizedBox(
+                  height: 20,
+                ),
+                Container(
+                  width: 150,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: shimmerColor,
+                    borderRadius: BorderRadius.circular(20),
                   ),
                 ),
-                Expanded(
-                    child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                const SizedBox(
+                  height: 20,
+                ),
+                Container(
+                  width: 70,
+                  height: 15,
+                  decoration: BoxDecoration(
+                    color: shimmerColor,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.max,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Container(
-                          width: 15,
-                          height: 15,
-                          decoration: BoxDecoration(
-                              color: Colors.grey.shade200,
-                              shape: BoxShape.circle),
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Container(
-                          width: 15,
-                          height: 15,
-                          decoration: BoxDecoration(
-                              color: Colors.grey.shade200,
-                              shape: BoxShape.circle),
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Container(
-                          width: 15,
-                          height: 15,
-                          decoration: BoxDecoration(
-                              color: Colors.grey.shade200,
-                              shape: BoxShape.circle),
-                        ),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Container(
-                          width: 15,
-                          height: 15,
-                          decoration: BoxDecoration(
-                              color: Colors.grey.shade200,
-                              shape: BoxShape.circle),
-                        ),
-                      ],
+                    Container(
+                      width: 15,
+                      height: 15,
+                      decoration: BoxDecoration(
+                        color: shimmerColor,
+                        shape: BoxShape.circle,
+                      ),
                     ),
                     const SizedBox(
                       width: 10,
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Container(
-                          width: 30,
-                          height: 10,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Container(
-                          width: 30,
-                          height: 10,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Container(
-                          width: 30,
-                          height: 10,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Container(
-                          width: 30,
-                          height: 10,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ],
+                    Container(
+                      width: 40,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: shimmerColor,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    Container(
+                      width: 15,
+                      height: 15,
+                      decoration: BoxDecoration(
+                        color: shimmerColor,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    Container(
+                      width: 40,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: shimmerColor,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    Container(
+                      width: 15,
+                      height: 15,
+                      decoration: BoxDecoration(
+                        color: shimmerColor,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    Container(
+                      width: 40,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: shimmerColor,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    Container(
+                      width: 15,
+                      height: 15,
+                      decoration: BoxDecoration(
+                        color: shimmerColor,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    Container(
+                      width: 40,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: shimmerColor,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
                     ),
                   ],
-                )),
+                ),
+                const SizedBox(
+                  height: 30,
+                ),
+                Container(
+                  width: 130,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(24),
+                    color: shimmerColor,
+                  ),
+                ),
               ],
             );
           }
@@ -529,7 +604,7 @@ class _WeatherPageState extends State<WeatherPage> {
 
   /// To navigate to next page
   void _navigateToNextPage(
-    Position location,
+    Position? location,
   ) {
     Navigator.push(
       context,
@@ -537,7 +612,11 @@ class _WeatherPageState extends State<WeatherPage> {
         return BlocProvider(
           create: (context) => sl<DetailBloc>(),
           child: DetailPage(
+            name: name,
             location: location,
+            temp: isCelsius
+                ? '${toCelsius(weatherDetailsResponse!.main?.temp ?? 0).toStringAsPrecision(2)}°'
+                : '${toFahrenheit(weatherDetailsResponse!.main?.temp ?? 0).toStringAsPrecision(2)}°',
           ),
         );
       }),
@@ -547,17 +626,6 @@ class _WeatherPageState extends State<WeatherPage> {
 
 /// To check and get the location...
 Future<Position> _getCurrentLocation() async {
-  bool serviceEnabled;
-
-  // Test if location services are enabled.
-  serviceEnabled = await Geolocator.isLocationServiceEnabled();
-  if (!serviceEnabled) {
-    // Location services are not enabled don't continue
-    // accessing the position and request users of the
-    // App to enable the location services.
-    return Future.error('Location services are disabled.');
-  }
-
   LocationPermission permission = await Geolocator.checkPermission();
   if (permission == LocationPermission.denied) {
     permission = await Geolocator.requestPermission();

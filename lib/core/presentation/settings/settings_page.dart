@@ -2,9 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:weather_app/core/domain/repositories/app_setting_repository.dart';
-import 'package:weather_app/core/presentation/settings/settings_bloc/settings_bloc.dart';
 
 import '../../../injection.dart';
+import '../../app_strings.dart';
+import 'bloc/frequency/frequency_bloc.dart';
+import 'bloc/temperature/temperature_bloc.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -19,7 +21,7 @@ class SettingsPage extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
           icon: const Icon(CupertinoIcons.chevron_back),
         ),
-        title: const Text('Settings'),
+        title: const Text(settings),
       ),
       body: SafeArea(
         child: Padding(
@@ -46,13 +48,15 @@ class SettingsPage extends StatelessWidget {
   Widget get _temperatureSettings => BlocProvider(
         create: (context) => TemperatureBloc(
           appSettingRepository: sl<AppSettingRepository>(),
-        )..add(GetTemperatureSettingsEvent()),
+        )..add(
+            GetTemperatureSettingsEvent(),
+          ),
         child: Builder(builder: (context) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Temprature unit',
+                temperatureUnit,
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -69,15 +73,15 @@ class SettingsPage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      'Celsius',
+                      celsius,
                       style: TextStyle(fontSize: 15),
                     ),
                     Transform.scale(
                       scale: 0.8,
-                      child: BlocBuilder<TemperatureBloc,
-                          TemperatureSettingsState>(
+                      child: BlocBuilder<TemperatureBloc, TemperatureState>(
                         builder: (context, state) {
                           return CupertinoSwitch(
+                            activeColor: Colors.lightBlue.shade200,
                             value: state is TemperatureSettingsFetched
                                 ? state.shouldShowCelsius
                                 : state is CelsiusUpdated
@@ -104,15 +108,15 @@ class SettingsPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Fahrenheit',
+                    fahrenheit,
                     style: TextStyle(fontSize: 15),
                   ),
-                  BlocBuilder<TemperatureBloc, TemperatureSettingsState>(
+                  BlocBuilder<TemperatureBloc, TemperatureState>(
                     builder: (context, state) {
-                      print(state);
                       return Transform.scale(
                         scale: 0.8,
                         child: CupertinoSwitch(
+                          activeColor: Colors.lightBlue.shade200,
                           value: state is TemperatureSettingsFetched
                               ? state.shouldShowFahrenheit
                               : state is CelsiusUpdated
@@ -137,76 +141,124 @@ class SettingsPage extends StatelessWidget {
 
   /// To show the frequency settings
 
-  Widget get _frequencySettings => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Frequency',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+  Widget get _frequencySettings => BlocProvider(
+        create: (context) => FrequencyBloc(
+          appSettingRepository: sl<AppSettingRepository>(),
+        )..add(GetFrequencySettingsEvent()),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              frequency,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-          const SizedBox(
-            height: 15,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                '10 minutes',
-                style: TextStyle(fontSize: 15),
+            const Text(
+              updateWeatherDetails,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
               ),
-              Transform.scale(
-                scale: 0.8,
-                child: CupertinoSwitch(
-                  value: true,
-                  onChanged: (isSelected) {},
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(
-            height: 8,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                '30 minutes',
-                style: TextStyle(fontSize: 15),
-              ),
-              Transform.scale(
-                scale: 0.8,
-                child: CupertinoSwitch(
-                  value: false,
-                  onChanged: (isSelected) {},
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(
-            height: 8,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                '60 minutes',
-                style: TextStyle(fontSize: 15),
-              ),
-              Transform.scale(
-                scale: 0.8,
-                child: CupertinoSwitch(
-                  value: true,
-                  onChanged: (isSelected) {},
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(
-            height: 8,
-          ),
-        ],
+            ),
+            const SizedBox(
+              height: 15,
+            ),
+            BlocBuilder<FrequencyBloc, FrequencyState>(
+              builder: (context, state) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      tenMin,
+                      style: TextStyle(fontSize: 15),
+                    ),
+                    Transform.scale(
+                      scale: 0.8,
+                      child: CupertinoSwitch(
+                        activeColor: Colors.lightBlue.shade200,
+                        value: state is FrequencySettingsFetched
+                            ? state.isTenMinsFreqEnabled
+                            : state is FrequencyTenMinsUpdated
+                                ? state.isSelected
+                                : false,
+                        onChanged: (isSelected) => context
+                            .read<FrequencyBloc>()
+                            .add(UpdateTenMinsFreqEvent(
+                                isTenMinFreqEnabled: isSelected)),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(
+              height: 8,
+            ),
+            BlocBuilder<FrequencyBloc, FrequencyState>(
+              builder: (context, state) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      thirtyMin,
+                      style: TextStyle(fontSize: 15),
+                    ),
+                    Transform.scale(
+                      scale: 0.8,
+                      child: CupertinoSwitch(
+                        activeColor: Colors.lightBlue.shade200,
+                        value: state is FrequencySettingsFetched
+                            ? state.isThirtyMinsFreqEnabled
+                            : state is FrequencyThirtyMinsUpdated
+                                ? state.isSelected
+                                : false,
+                        onChanged: (isSelected) => context
+                            .read<FrequencyBloc>()
+                            .add(UpdateThirtyMinsFreqEvent(
+                                isThirtyMinFreqEnabled: isSelected)),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(
+              height: 8,
+            ),
+            BlocBuilder<FrequencyBloc, FrequencyState>(
+              builder: (context, state) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      sixtyMin,
+                      style: TextStyle(fontSize: 15),
+                    ),
+                    Transform.scale(
+                      scale: 0.8,
+                      child: CupertinoSwitch(
+                        activeColor: Colors.lightBlue.shade200,
+                        value: state is FrequencySettingsFetched
+                            ? state.isSixtyMinsFreqEnabled
+                            : state is FrequencySixtyMinsUpdated
+                                ? state.isSelected
+                                : false,
+                        onChanged: (isSelected) => context
+                            .read<FrequencyBloc>()
+                            .add(UpdateSixtyMinsFreqEvent(
+                                isSixtyMinFreqEnabled: isSelected)),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(
+              height: 8,
+            ),
+          ],
+        ),
       );
 }
